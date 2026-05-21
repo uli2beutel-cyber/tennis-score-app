@@ -5,24 +5,34 @@
 <title>Tennis App</title>
 
 <style>
-body {
-  font-family: Arial;
-  text-align: center;
-  color: white;
+
+/* ✅ Reset gegen weiße Ränder */
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+  font-family: Arial;
+  color: white;
+  text-align: center;
+
+  /* Fallback-Hintergrund */
+  background: #000;
 }
 
-/* ✅ Startbildschirm mit Bild */
+/* ✅ Startscreen Vollbild */
 #setup {
-  min-height: 100vh;
-  background-image: url('ryan-searle-qjrjJnFypa0-unsplash.jpg');
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+
+  background-image: url('maurits-bausenhart-XtcZbSPVJ3A-unsplash.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  position: relative;
 }
 
-/* ✅ Abdunklung */
+/* ✅ dunkles Overlay */
 #setup::before {
   content: "";
   position: absolute;
@@ -30,22 +40,24 @@ body {
   background: rgba(0,0,0,0.45);
 }
 
-/* ✅ Titel im Bild */
+/* ✅ Titel sauber im Bild */
 .title {
   position: relative;
   z-index: 1;
   margin: 0;
-  padding: 40px 10px 10px;
+  padding: 30px 10px 15px;
   font-size: 34px;
   font-weight: bold;
   letter-spacing: 1px;
-  text-shadow: 0 3px 10px rgba(0,0,0,0.9);
+  text-shadow: 0 3px 12px rgba(0,0,0,0.9);
 }
 
-/* Inhalt */
+/* ✅ Zentrierter Inhalt */
 #setup .card {
   position: relative;
   z-index: 1;
+  margin: 20px auto;
+  max-width: 420px;
 }
 
 /* Spielscreen */
@@ -54,10 +66,10 @@ body {
   background: #0f172a;
 }
 
+/* UI */
 .card {
-  background: rgba(30, 41, 59, 0.95);
+  background: rgba(30, 41, 59, 0.92);
   padding: 20px;
-  margin: 10px;
   border-radius: 15px;
 }
 
@@ -85,14 +97,14 @@ input, select {
 }
 
 .hidden { display: none; }
-</style>
 
+</style>
 </head>
+
 <body>
 
 <div id="setup">
 
-  <!-- ✅ Titel jetzt im Bild -->
   <h1 class="title">🎾 Tennis Score</h1>
 
   <div class="card">
@@ -138,7 +150,6 @@ let players=[];
 let history=[];
 
 let maxSets = 2;
-let noAd = false;
 let matchTiebreak = false;
 
 let state={
@@ -193,15 +204,6 @@ function startGame(){
     ];
   }
 
-  let modeType = document.getElementById("countMode").value;
-
-  // ✅ Immer mit Vorteil
-  noAd = false;
-
-  if(modeType === "medenspiel"){
-    maxSets = 2;
-  }
-
   state.server=parseInt(document.getElementById("serverSelect").value);
 
   document.getElementById("setup").classList.add("hidden");
@@ -239,7 +241,7 @@ function render(){
   let score="";
 
   if(state.tiebreak){
-    score = `${state.points[0]} : ${state.points[1]} ${matchTiebreak ? '(Match-TB)' : '(TB)'}`;
+    score = `${state.points[0]} : ${state.points[1]} ${(matchTiebreak ? '(Match-TB)' : '(TB)')}`;
   }
   else if(state.points[0]>=3 && state.points[1]>=3){
     if(state.points[0]===state.points[1]) score="Einstand";
@@ -276,7 +278,6 @@ function point(t){
 function winGame(t){
 
   if(matchTiebreak){
-    state.sets[t]++;
     alert("🏆 Match gewonnen! " + getTeamName(t));
     reset();
     return;
@@ -320,5 +321,7 @@ function reset(){
 setMode("single");
 
 </script>
+
 </body>
 </html>
+``
