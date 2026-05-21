@@ -10,10 +10,10 @@ body {
   text-align: center;
   background: #0f172a;
   color: white;
+  margin: 0;
 }
 
-h1,h2,h3 { color: white; }
-
+/* Karten */
 .card {
   background: #1e293b;
   padding: 20px;
@@ -21,27 +21,48 @@ h1,h2,h3 { color: white; }
   border-radius: 15px;
 }
 
+/* Buttons (iPhone Fix!) */
 button {
   padding: 18px;
   margin: 10px;
   font-size: 18px;
   border-radius: 12px;
+
   border: none;
   color: white;
+
+  background: #334155;
+
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-.teamA { background: #16a34a; }
-.teamB { background: #2563eb; }
-.reset { background: #dc2626; }
+/* Farben */
+.teamA {
+  background: #16a34a !important;
+}
 
+.teamB {
+  background: #2563eb !important;
+}
+
+.reset {
+  background: #dc2626 !important;
+}
+
+/* Eingabefelder */
 input {
-  padding: 8px;
-  margin: 5px;
+  padding: 10px;
+  margin: 6px;
   border-radius: 8px;
   border: none;
+  font-size: 16px;
 }
 
-.hidden { display: none; }
+/* verstecken */
+.hidden {
+  display: none;
+}
 </style>
 </head>
 
@@ -49,6 +70,7 @@ input {
 
 <h1>🎾 Tennis Score</h1>
 
+<!-- Setup -->
 <div id="setup" class="card">
   <h2>Spiel auswählen</h2>
 
@@ -60,13 +82,14 @@ input {
   <button onclick="startGame()">Start</button>
 </div>
 
+<!-- Game -->
 <div id="game" class="hidden">
 
 <div class="card">
-<h2 id="sets"></h2>
-<h2 id="games"></h2>
-<h3 id="server"></h3>
-<h1 id="score"></h1>
+  <h2 id="sets"></h2>
+  <h2 id="games"></h2>
+  <h3 id="server"></h3>
+  <h1 id="score"></h1>
 </div>
 
 <button class="teamA" onclick="point(0)">Team A</button>
@@ -78,35 +101,43 @@ input {
 </div>
 
 <script>
-let mode="single";
-let players=[];
-let points=[0,0],games=[0,0],sets=[0,0];
+let mode = "single";
+let players = [];
+
+let points=[0,0];
+let games=[0,0];
+let sets=[0,0];
+
 let tiebreak=false;
 let server=0;
 
+// Spielmodus wählen
 function setMode(m){
-  mode=m;
-  let html="";
+  mode = m;
+  let html = "";
+
   if(m==="single"){
-    html+=`<input id="p0" placeholder="Spieler 1">
-           <input id="p1" placeholder="Spieler 2">`;
+    html += `<input id="p0" placeholder="Spieler 1">
+             <input id="p1" placeholder="Spieler 2">`;
   } else {
-    html+=`<input id="p0" placeholder="A1">
-           <input id="p1" placeholder="A2">
-           <input id="p2" placeholder="B1">
-           <input id="p3" placeholder="B2">`;
+    html += `<input id="p0" placeholder="A1">
+             <input id="p1" placeholder="A2">
+             <input id="p2" placeholder="B1">
+             <input id="p3" placeholder="B2">`;
   }
-  document.getElementById("playerInputs").innerHTML=html;
+
+  document.getElementById("playerInputs").innerHTML = html;
 }
 
+// Spiel starten
 function startGame(){
   if(mode==="single"){
-    players=[
+    players = [
       document.getElementById("p0").value || "Spieler 1",
       document.getElementById("p1").value || "Spieler 2"
     ];
   } else {
-    players=[
+    players = [
       document.getElementById("p0").value || "A1",
       document.getElementById("p1").value || "A2",
       document.getElementById("p2").value || "B1",
@@ -120,68 +151,79 @@ function startGame(){
   render();
 }
 
+// Anzeige aktualisieren
 function render(){
-  document.getElementById("sets").innerText="Satz: "+sets[0]+" : "+sets[1];
-  document.getElementById("games").innerText="Spiele: "+games[0]+" : "+games[1];
+  document.getElementById("sets").innerText = "Satz: " + sets[0] + " : " + sets[1];
+  document.getElementById("games").innerText = "Spiele: " + games[0] + " : " + games[1];
 
   let serverName = players[server] || "Spieler";
-  document.getElementById("server").innerText="Aufschlag: "+serverName;
+  document.getElementById("server").innerText = "Aufschlag: " + serverName;
 
-  let s=["0","15","30","40"];
-  let score="";
+  let scoreNames = ["0","15","30","40"];
+  let score = "";
+
   if(tiebreak){
-    score=points[0]+" : "+points[1]+" (TB)";
-  } else if(points[0]>=3 && points[1]>=3){
-    if(points[0]==points[1]) score="Einstand";
-    else score=points[0]>points[1]?"Vorteil A":"Vorteil B";
-  } else {
-    score=s[points[0]]+" : "+s[points[1]];
+    score = points[0] + " : " + points[1] + " (TB)";
+  }
+  else if(points[0]>=3 && points[1]>=3){
+    if(points[0]===points[1]) score="Einstand";
+    else score = points[0]>points[1] ? "Vorteil A" : "Vorteil B";
+  }
+  else{
+    score = scoreNames[points[0]] + " : " + scoreNames[points[1]];
   }
 
-  document.getElementById("score").innerText=score;
+  document.getElementById("score").innerText = score;
 }
 
-function point(t){
-  points[t]++;
+// Punkt
+function point(team){
+  points[team]++;
+
   if(tiebreak){
-    if(points[t]>=7 && points[t]-points[1-t]>=2){
-      winGame(t);
+    if(points[team]>=7 && points[team]-points[1-team]>=2){
+      winGame(team);
     }
   } else {
-    if(points[t]>=4 && points[t]-points[1-t]>=2){
-      winGame(t);
+    if(points[team]>=4 && points[team]-points[1-team]>=2){
+      winGame(team);
     }
   }
+
   render();
 }
 
-function winGame(t){
-  games[t]++;
+// Spielgewinn
+function winGame(team){
+  games[team]++;
   points=[0,0];
-  server=(server+1)%(mode==="single"?2:4);
 
-  if(games[t]>=6 && games[t]-games[1-t]>=2){
-    sets[t]++;
+  server = (server + 1) % (mode==="single" ? 2 : 4);
+
+  if(games[team]>=6 && games[team]-games[1-team]>=2){
+    sets[team]++;
     games=[0,0];
   }
 
-  if(sets[t]==2){
-    alert("🏆 Match gewonnen Team " + (t===0?"A":"B"));
+  if(sets[team]===2){
+    alert("🏆 Match gewonnen Team " + (team===0?"A":"B"));
     reset();
     return;
   }
 
-  if(games[0]==6 && games[1]==6){
+  if(games[0]===6 && games[1]===6){
     tiebreak=true;
   } else {
     tiebreak=false;
   }
 }
 
+// Reset
 function reset(){
   location.reload();
 }
 
+// Start
 setMode("single");
 </script>
 
