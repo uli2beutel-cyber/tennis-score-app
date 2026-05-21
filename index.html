@@ -10,78 +10,57 @@ body {
   text-align: center;
   color: white;
   margin: 0;
+  background: #0f172a;
 }
 
-/* Hintergrund Start */
-#setup::before {
-  content: "";
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background-image:url("https://upload.wikimedia.org/wikipedia/commons/6/6e/Roland_Garros_Clay_Court.jpg");
-  background-size:cover;
-  background-position:center;
-  z-index:-2;
-}
-
-/* Hintergrund Spiel */
-#game::before {
-  content: "";
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background-image:url("https://upload.wikimedia.org/wikipedia/commons/3/37/Tennis_court_clay.jpg");
-  background-size:cover;
-  background-position:center;
-  z-index:-2;
-}
-
-/* Overlay für Lesbarkeit */
+/* Container */
 #setup, #game {
-  background: rgba(0,0,0,0.55);
-  min-height:100vh;
+  min-height: 100vh;
 }
 
 /* Card */
 .card {
-  background: rgba(15,23,42,0.85);
-  padding:20px;
-  margin:10px;
-  border-radius:15px;
+  background: rgba(30, 41, 59, 0.95);
+  padding: 20px;
+  margin: 10px;
+  border-radius: 15px;
 }
 
 /* Buttons */
 button {
-  padding:18px;
-  margin:10px;
-  font-size:18px;
-  border-radius:12px;
-  border:none;
-  color:white;
-  background:#334155;
+  padding: 18px;
+  margin: 10px;
+  font-size: 18px;
+  border-radius: 12px;
+  border: none;
+  color: white;
+  background: #334155;
 
-  appearance:none;
-  -webkit-appearance:none;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-.teamA { background:#16a34a !important; }
-.teamB { background:#2563eb !important; }
-.reset { background:#dc2626 !important; }
+.teamA { background: #16a34a !important; }
+.teamB { background: #2563eb !important; }
+.reset { background: #dc2626 !important; }
 
 .undo {
-  background:#f59e0b !important;
-  margin-top:40px;
+  background: #f59e0b !important;
+  margin-top: 40px;
 }
 
+/* Inputs */
 input, select {
-  padding:10px;
-  margin:6px;
-  border-radius:8px;
-  border:none;
-  font-size:16px;
+  padding: 10px;
+  margin: 6px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
 }
 
-.hidden { display:none; }
+.hidden {
+  display: none;
+}
 </style>
 </head>
 
@@ -90,8 +69,9 @@ input, select {
 <h1>🎾 Tennis Score</h1>
 
 <!-- Setup -->
-<div id="setup" class="card">
+<div id="setup">
 
+<div class="card">
 <h2>Spiel auswählen</h2>
 
 <button onclick="setMode('single')">Einzel</button>
@@ -103,6 +83,7 @@ input, select {
 <select id="serverSelect"></select>
 
 <button onclick="startGame()">Start</button>
+</div>
 
 </div>
 
@@ -162,16 +143,15 @@ function setMode(m){
   }
 
   document.getElementById("playerInputs").innerHTML=html;
-
   updateServerOptions();
 }
 
-/* Aufschlag-Auswahl */
+/* Aufschlag */
 function updateServerOptions(){
   let select=document.getElementById("serverSelect");
   select.innerHTML="";
 
-  let count=(mode==="single")?2:4;
+  let count = (mode==="single") ? 2 : 4;
 
   for(let i=0;i<count;i++){
     let opt=document.createElement("option");
@@ -206,7 +186,7 @@ function startGame(){
   render();
 }
 
-/* Buttons anzeigen */
+/* Buttons */
 function renderButtons(){
   let html="";
 
@@ -226,8 +206,8 @@ function render(){
   document.getElementById("sets").innerText=`Satz: ${state.sets[0]} : ${state.sets[1]}`;
   document.getElementById("games").innerText=`Spiele: ${state.games[0]} : ${state.games[1]}`;
 
-  let serverName=players[state.server % players.length];
-  document.getElementById("server").innerText="Aufschlag: "+serverName;
+  let serverName = players[state.server % players.length];
+  document.getElementById("server").innerText="Aufschlag: " + serverName;
 
   let s=["0","15","30","40"];
   let score="";
