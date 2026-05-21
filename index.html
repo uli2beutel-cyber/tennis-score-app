@@ -31,9 +31,10 @@ html, body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.25);
 }
 
+/* Titel */
 .title {
   position: relative;
   z-index: 1;
@@ -44,22 +45,31 @@ html, body {
   text-shadow: 0 4px 12px rgba(0,0,0,0.9);
 }
 
+/* ✅ Glassmorphism Card */
 .card {
   position: relative;
   z-index: 1;
   max-width: 420px;
   margin: 20px auto;
-  background: rgba(30,41,59,0.9);
+
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+
   padding: 20px;
   border-radius: 20px;
 }
 
+/* Game Screen */
 #game {
   min-height: 100vh;
   background: #0f172a;
 }
 
-/* MODERNE BUTTONS */
+/* Buttons modern */
 button {
   padding: 18px;
   margin: 8px;
@@ -75,7 +85,7 @@ button:active {
   transform: scale(0.96);
 }
 
-/* Team Buttons */
+/* Teams */
 .teamA {
   background: linear-gradient(135deg, #22c55e, #15803d);
 }
@@ -84,7 +94,7 @@ button:active {
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
 
-/* Action Buttons */
+/* Actions */
 .undo {
   background: linear-gradient(135deg, #f59e0b, #b45309);
   margin-top: 40px;
@@ -114,6 +124,7 @@ input, select {
   <h1 class="title">🎾 Tennis Score</h1>
 
   <div class="card">
+
     <button onclick="setMode('single')">Einzel</button>
     <button onclick="setMode('double')">Doppel</button>
 
@@ -123,6 +134,7 @@ input, select {
     <select id="serverSelect"></select>
 
     <button onclick="startGame()">Start</button>
+
   </div>
 </div>
 
@@ -148,7 +160,6 @@ let mode="single";
 let players=[];
 let history=[];
 let matchTiebreak=false;
-
 let setHistory=[];
 
 let state={
@@ -159,7 +170,10 @@ let state={
   server:0
 };
 
-function cloneState(){ return JSON.parse(JSON.stringify({state, matchTiebreak, setHistory})); }
+/* STATE SAVE */
+function cloneState(){
+  return JSON.parse(JSON.stringify({state, matchTiebreak, setHistory}));
+}
 function restoreState(s){
   state=s.state;
   matchTiebreak=s.matchTiebreak;
@@ -171,6 +185,7 @@ function saveHistory(){
   if(history.length>20) history.pop();
 }
 
+/* MODE */
 function setMode(m){
   mode=m;
   let html="";
@@ -199,6 +214,7 @@ function updateServerOptions(){
   }
 }
 
+/* START */
 function startGame(){
 
   if(mode==="single"){
@@ -224,6 +240,7 @@ function startGame(){
   render();
 }
 
+/* HELPERS */
 function getTeamName(team){
   if(mode==="single") return players[team];
   return team===0 ? players[0]+" / "+players[1] : players[2]+" / "+players[3];
@@ -235,6 +252,7 @@ function renderButtons(){
      <button class="teamB" onclick="point(1)">${getTeamName(1)}</button>`;
 }
 
+/* RENDER */
 function render(){
 
   document.getElementById("setHistory").innerText =
@@ -265,13 +283,13 @@ function render(){
   document.getElementById("score").innerText=score;
 }
 
+/* POINT */
 function point(t){
   saveHistory();
   state.points[t]++;
 
   if(state.tiebreak){
     let limit = matchTiebreak ? 10 : 7;
-
     if(state.points[t]>=limit && state.points[t]-state.points[1-t]>=2){
       winGame(t);
     }
@@ -284,8 +302,10 @@ function point(t){
   render();
 }
 
+/* GAME / SET LOGIC */
 function winGame(t){
 
+  // Match-Tiebreak
   if(matchTiebreak){
     setHistory.push(`10:${state.points[1-t]}`);
     alert("🏆 Match gewonnen! " + getTeamName(t));
@@ -293,9 +313,9 @@ function winGame(t){
     return;
   }
 
-  // ✅ Tiebreak Satzgewinn 7:6
+  // Normaler Tiebreak → SATZ 7:6
   if(state.tiebreak && state.games[0]===6 && state.games[1]===6){
-    setHistory.push(`7:6`);
+    setHistory.push("7:6");
     state.sets[t]++;
     state.games=[0,0];
     state.points=[0,0];
@@ -305,12 +325,12 @@ function winGame(t){
     if(state.sets[0]===1 && state.sets[1]===1){
       matchTiebreak=true;
       state.tiebreak=true;
-      return;
     }
 
     return;
   }
 
+  // normales Spiel
   state.games[t]++;
   state.points=[0,0];
   state.server++;
@@ -329,6 +349,7 @@ function winGame(t){
   state.tiebreak=(state.games[0]===6 && state.games[1]===6);
 }
 
+/* ACTIONS */
 function undo(){
   if(history.length===0) return;
   restoreState(history.shift());
@@ -345,3 +366,4 @@ setMode("single");
 
 </body>
 </html>
+``
