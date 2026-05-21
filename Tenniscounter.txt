@@ -1,0 +1,207 @@
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const scoreNames = ["0", "15", "30", "40"];
+
+export default function TennisApp() {
+  // Match-State
+  const [points, setPoints] = useState([0, 0]);
+  const [games, setGames] = useState([0, 0]);
+  const [sets, setSets] = useState([0, 0]);
+  const [tiebreak, setTiebreak] = useState(false);
+
+  // Doppel
+  const [names, setNames] = useState(["A1", "A2", "B1", "B2"]);
+  const [serveOrder] = useState([0, 1, 2, 3]);
+  const [serverTurn, setServerTurn] = useState(0);
+  const [tiebreakServeCount, setTiebreakServeCount] = useState(0);
+
+  // Turnier
+  const [matches, setMatches] = useState([]);
+  const [currentMatch, setCurrentMatch] = useState(0);
+  const [tournamentMode, setTournamentMode] = useState(false);
+  const currentServer = names[serveOrder[serverTurn]];
+  const nextServer = () => {
+    setServerTurn((prev) => (prev + 1) % 4);
+  };
+
+  const tiebreakNextServer = () => {
+    setTiebreakServeCount((prev) => prev + 1);
+    if (tiebreakServeCount === 0 || (tiebreakServeCount + 1) % 2 === 0) {
+      nextServer();
+    }
+  };
+
+  const resetPoints = () => setPoints([0, 0]);
+  const winGame = (team) => {
+    const newGames = [...games];
+    newGames[team]++;
+
+    let newSets = [...sets];
+
+    if (newGames[team] >= 6 && newGames[team] - newGames[1 - team] >= 2) {
+      newSets[team]++;
+      newGames[0] = 0;
+      newGames[1] = 0;
+    }
+
+    if (newSets[team] === 2) {
+      endMatch(team);
+      return;
+    }
+
+    if (newGames[0] === 6 && newGames[1] === 6) {
+      setTiebreak(true);
+      setTiebreakServeCount(0);
+    } else {
+      setTiebreak(false);
+    }
+
+    setGames(newGames);
+    setSets(newSets);
+    resetPoints();
+    nextServer();
+  };
+
+  const pointWon = (team) => {
+    if (tiebreak) {
+      const newPoints = [...points];
+      newPoints[team]++;
+      tiebreakNextServer();
+
+      if (newPoints[team] >= 7 && newPoints[team] - newPoints[1 - team] >= 2) {
+        winGame(team);
+        setTiebreak(false);
+      } else {
+        setPoints(newPoints);
+      }
+      return;
+    }
+
+    const newPoints = [...points];
+    newPoints[team]++;
+
+    if (newPoints[team] >= 4 && newPoints[team] - newPoints[1 - team] >= 2) {
+      winGame(team);
+    } else {
+      setPoints(newPoints);
+    }
+  };
+
+  const displayScore = () => {
+    if (tiebreak) return `${points[0]} : ${points[1]} (TB)`;
+    if (points[0] >= 3 && points[1] >= 3) {
+      if (points[0] === points[1]) return "Einstand";
+      return points[0] > points[1] ? "Vorteil Team A" : "Vorteil Team B";
+    }
+
+    return `${scoreNames[points[0]]} : ${scoreNames[points[1]]}`;
+  };
+
+  // --- Turnierlogik ---
+  const createTournament = () => {
+    const initialMatches = [
+      { id: 1, winner: null },
+      { id: 2, winner: null },
+      { id: 3, winner: null }, // Finale
+    ];
+    setMatches(initialMatches);
+    setCurrentMatch(0);
+    setTournamentMode(true);
+  };
+
+  const endMatch = (team) => {
+    if (!tournamentMode) return;
+
+
+    const updatedMatches = [...matches];
+    updatedMatches[currentMatch].winner = team;
+
+
+    const nextMatch = currentMatch + 1;
+    setMatches(updatedMatches);
+
+
+    if (nextMatch < updatedMatches.length) {
+      setCurrentMatch(nextMatch);
+      resetMatch();
+    } else {
+      alert(`🏆 Turniersieger: Team ${team === 0 ? "A" : "B"}`);
+      setTournamentMode(false);
+    }
+  };
+
+
+  const resetMatch = () => {
+    setPoints([0, 0]);
+    setGames([0, 0]);
+    setSets([0, 0]);
+    setTiebreak(false);
+    setServerTurn(0);
+  };
+
+  const resetAll = () => {
+    resetMatch();
+    setMatches([]);
+    setTournamentMode(false);
+  };
+
+
+  return (
+    <div className="p-4 grid gap-4">
+      <Card>
+        <CardContent className="p-4 text-center">
+          <h1 className="text-xl font-bold">Tennis Turnier App</h1>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {names.map((n, i) => (
+              <Input
+                key={i}
+                value={n}
+                onChange={(e) => {
+                  const newNames = [...names];
+                  newNames[i] = e.target.value;
+                  setNames(newNames);
+                }}
+              />
+            ))}
+          </div>
+
+          <p>Satz: {sets[0]} : {sets[1]}</p>
+          <p>Spiele: {games[0]} : {games[1]}</p>
+          <p>Aufschlag: {currentServer}</p>
+          <p className="text-xl">{displayScore()}</p>
+          {tournamentMode && (
+            <p className="font-bold">Match {currentMatch + 1} / {matches.length}</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Button onClick={() => pointWon(0)}>Team A</Button>
+        <Button onClick={() => pointWon(1)}>Team B</Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <Button onClick={createTournament}>Turnier starten</Button>
+        <Button onClick={resetAll}>Reset</Button>
+      </div>
+
+      {tournamentMode && (
+        <Card>
+          <CardContent>
+            <h2 className="font-bold">Turnierbaum</h2>
+            <ul>
+              {matches.map((m, i) => (
+                <li key={i}>
+                  Match {i + 1}: {m.winner !== null ? `Gewinner Team ${m.winner === 0 ? "A" : "B"}` : "offen"}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
