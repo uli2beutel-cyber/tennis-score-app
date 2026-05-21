@@ -12,16 +12,7 @@ body {
   color: white;
 }
 
-button {
-  padding: 20px;
-  margin: 10px;
-  font-size: 20px;
-  border-radius: 12px;
-  border: none;
-}
-
-.teamA { background: #22c55e; }
-.teamB { background: #3b82f6; }
+h1,h2,h3 { color: white; }
 
 .card {
   background: #1e293b;
@@ -29,101 +20,30 @@ button {
   margin: 10px;
   border-radius: 15px;
 }
-</style>
 
+button {
+  padding: 18px;
+  margin: 10px;
+  font-size: 18px;
+  border-radius: 12px;
+  border: none;
+  color: white;
+}
+
+.teamA { background: #16a34a; }
+.teamB { background: #2563eb; }
+.reset { background: #dc2626; }
+
+input {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+}
+
+.hidden { display: none; }
+</style>
 </head>
 
 <body>
 
-<h1>🎾 Tennis Score</h1>
-
-<div class="card">
-<h2 id="sets"></h2>
-<h2 id="games"></h2>
-<h3 id="server"></h3>
-<h1 id="score"></h1>
-</div>
-
-<button class="teamA" onclick="point(0)">Team A</button>
-<button class="teamB" onclick="point(1)">Team B</button>
-
-<br><br>
-<button onclick="reset()">Reset</button>
-
-<script>
-let points=[0,0],games=[0,0],sets=[0,0];
-let tiebreak=false;
-let names=["A1","A2","B1","B2"];
-let server=0;
-
-function render(){
-document.getElementById("sets").innerText="Satz: "+sets[0]+" : "+sets[1];
-document.getElementById("games").innerText="Spiele: "+games[0]+" : "+games[1];
-document.getElementById("server").innerText="Aufschlag: "+names[server];
-
-let s=["0","15","30","40"];
-let score="";
-
-if(tiebreak){
-score=points[0]+" : "+points[1]+" (TB)";
-}else if(points[0]>=3 && points[1]>=3){
-if(points[0]==points[1]) score="Einstand";
-else score=points[0]>points[1]?"Vorteil A":"Vorteil B";
-}else{
-score=s[points[0]]+" : "+s[points[1]];
-}
-
-document.getElementById("score").innerText=score;
-}
-
-function point(t){
-points[t]++;
-if(tiebreak){
-if(points[t]>=7 && points[t]-points[1-t]>=2){
-winGame(t);
-}
-}else{
-if(points[t]>=4 && points[t]-points[1-t]>=2){
-winGame(t);
-}
-}
-render();
-}
-
-function winGame(t){
-games[t]++;
-points=[0,0];
-server=(server+1)%4;
-
-if(games[t]>=6 && games[t]-games[1-t]>=2){
-sets[t]++;
-games=[0,0];
-}
-
-if(sets[t]==2){
-alert("🏆 Match gewonnen Team "+(t==0?"A":"B"));
-reset();
-return;
-}
-
-if(games[0]==6 && games[1]==6){
-tiebreak=true;
-}else{
-tiebreak=false;
-}
-}
-
-function reset(){
-points=[0,0];
-games=[0,0];
-sets=[0,0];
-tiebreak=false;
-server=0;
-render();
-}
-
-render();
-</script>
-
-</body>
-</html>
