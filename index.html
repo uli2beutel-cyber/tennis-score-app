@@ -12,7 +12,7 @@ body {
   margin: 0;
 }
 
-/* ✅ Startbildschirm mit deinem Bild */
+/* ✅ Startbildschirm mit Bild */
 #setup {
   min-height: 100vh;
   background-image: url('ryan-searle-qjrjJnFypa0-unsplash.jpg');
@@ -22,7 +22,7 @@ body {
   position: relative;
 }
 
-/* Abdunklung für bessere Lesbarkeit */
+/* ✅ Abdunklung */
 #setup::before {
   content: "";
   position: absolute;
@@ -30,7 +30,19 @@ body {
   background: rgba(0,0,0,0.45);
 }
 
-/* Inhalt über Overlay */
+/* ✅ Titel im Bild */
+.title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 40px 10px 10px;
+  font-size: 34px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.9);
+}
+
+/* Inhalt */
 #setup .card {
   position: relative;
   z-index: 1;
@@ -78,9 +90,11 @@ input, select {
 </head>
 <body>
 
-<h1>🎾 Tennis Score</h1>
-
 <div id="setup">
+
+  <!-- ✅ Titel jetzt im Bild -->
+  <h1 class="title">🎾 Tennis Score</h1>
+
   <div class="card">
 
     <h2>Spiel auswählen</h2>
@@ -181,12 +195,10 @@ function startGame(){
 
   let modeType = document.getElementById("countMode").value;
 
-  // ✅ Immer mit Vorteil spielen
+  // ✅ Immer mit Vorteil
   noAd = false;
 
   if(modeType === "medenspiel"){
-    maxSets = 2;
-  } else {
     maxSets = 2;
   }
 
@@ -278,7 +290,6 @@ function winGame(t){
     state.sets[t]++;
     state.games=[0,0];
 
-    /* ✅ Medenspiel: Supertiebreak bei 1:1 */
     if(state.sets[0]===1 && state.sets[1]===1){
       matchTiebreak = true;
       state.tiebreak = true;
@@ -311,4 +322,3 @@ setMode("single");
 </script>
 </body>
 </html>
-``
