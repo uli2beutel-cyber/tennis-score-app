@@ -3,21 +3,52 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tennis App</title>
+
 <style>
 body {
   font-family: Arial;
   text-align: center;
   color: white;
   margin: 0;
+}
+
+/* ✅ Startbildschirm mit deinem Bild */
+#setup {
+  min-height: 100vh;
+  background-image: url('ryan-searle-qjrjJnFypa0-unsplash.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+/* Abdunklung für bessere Lesbarkeit */
+#setup::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+}
+
+/* Inhalt über Overlay */
+#setup .card {
+  position: relative;
+  z-index: 1;
+}
+
+/* Spielscreen */
+#game {
+  min-height: 100vh;
   background: #0f172a;
 }
-#setup, #game { min-height: 100vh; }
+
 .card {
   background: rgba(30, 41, 59, 0.95);
   padding: 20px;
   margin: 10px;
   border-radius: 15px;
 }
+
 button {
   padding: 18px;
   margin: 10px;
@@ -27,10 +58,12 @@ button {
   color: white;
   background: #334155;
 }
+
 .teamA { background: #16a34a !important; }
 .teamB { background: #2563eb !important; }
 .reset { background: #dc2626 !important; }
 .undo { background: #f59e0b !important; margin-top: 40px; }
+
 input, select {
   padding: 10px;
   margin: 6px;
@@ -38,8 +71,10 @@ input, select {
   border: none;
   font-size: 16px;
 }
+
 .hidden { display: none; }
 </style>
+
 </head>
 <body>
 
@@ -47,6 +82,7 @@ input, select {
 
 <div id="setup">
   <div class="card">
+
     <h2>Spiel auswählen</h2>
     <button onclick="setMode('single')">Einzel</button>
     <button onclick="setMode('double')">Doppel</button>
@@ -145,13 +181,13 @@ function startGame(){
 
   let modeType = document.getElementById("countMode").value;
 
-  // ✅ IMMER mit Vorteil spielen
+  // ✅ Immer mit Vorteil spielen
   noAd = false;
 
   if(modeType === "medenspiel"){
-    maxSets = 2; // 2 Gewinnsätze
+    maxSets = 2;
   } else {
-    maxSets = 2; // Standard bleibt gleich
+    maxSets = 2;
   }
 
   state.server=parseInt(document.getElementById("serverSelect").value);
@@ -238,12 +274,11 @@ function winGame(t){
   state.points=[0,0];
   state.server++;
 
-  // Satzgewinn
   if(state.games[t]>=6 && state.games[t]-state.games[1-t]>=2){
     state.sets[t]++;
     state.games=[0,0];
 
-    // ✅ Medenspiel: Match-Tiebreak bei 1:1
+    /* ✅ Medenspiel: Supertiebreak bei 1:1 */
     if(state.sets[0]===1 && state.sets[1]===1){
       matchTiebreak = true;
       state.tiebreak = true;
@@ -252,14 +287,12 @@ function winGame(t){
     }
   }
 
-  // Matchgewinn
   if(state.sets[t] === maxSets){
     alert("🏆 Match gewonnen! " + getTeamName(t));
     reset();
     return;
   }
 
-  // normaler Tiebreak bei 6:6
   state.tiebreak=(state.games[0]===6 && state.games[1]===6);
 }
 
@@ -278,3 +311,4 @@ setMode("single");
 </script>
 </body>
 </html>
+``
