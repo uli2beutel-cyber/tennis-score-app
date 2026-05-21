@@ -6,92 +6,98 @@
 
 <style>
 
-/* ✅ Reset gegen weiße Ränder */
+/* RESET */
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow-x: hidden;
   font-family: Arial;
   color: white;
   text-align: center;
-
-  /* Fallback-Hintergrund */
   background: #000;
 }
 
-/* ✅ Startscreen Vollbild */
+/* STARTSCREEN */
 #setup {
-  position: relative;
   height: 100vh;
   width: 100vw;
-
   background-image: url('maurits-bausenhart-XtcZbSPVJ3A-unsplash.jpg');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
+  position: relative;
 }
 
-/* ✅ dunkles Overlay */
 #setup::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.5);
 }
 
-/* ✅ Titel sauber im Bild */
 .title {
   position: relative;
   z-index: 1;
   margin: 0;
-  padding: 30px 10px 15px;
+  padding: 30px 10px;
   font-size: 34px;
   font-weight: bold;
-  letter-spacing: 1px;
-  text-shadow: 0 3px 12px rgba(0,0,0,0.9);
+  text-shadow: 0 4px 12px rgba(0,0,0,0.9);
 }
 
-/* ✅ Zentrierter Inhalt */
-#setup .card {
+.card {
   position: relative;
   z-index: 1;
-  margin: 20px auto;
   max-width: 420px;
+  margin: 20px auto;
+  background: rgba(30,41,59,0.9);
+  padding: 20px;
+  border-radius: 20px;
 }
 
-/* Spielscreen */
 #game {
   min-height: 100vh;
   background: #0f172a;
 }
 
-/* UI */
-.card {
-  background: rgba(30, 41, 59, 0.92);
-  padding: 20px;
-  border-radius: 15px;
-}
-
+/* MODERNE BUTTONS */
 button {
   padding: 18px;
-  margin: 10px;
+  margin: 8px;
   font-size: 18px;
-  border-radius: 12px;
+  border-radius: 20px;
   border: none;
   color: white;
-  background: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.teamA { background: #16a34a !important; }
-.teamB { background: #2563eb !important; }
-.reset { background: #dc2626 !important; }
-.undo { background: #f59e0b !important; margin-top: 40px; }
+button:active {
+  transform: scale(0.96);
+}
+
+/* Team Buttons */
+.teamA {
+  background: linear-gradient(135deg, #22c55e, #15803d);
+}
+
+.teamB {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+/* Action Buttons */
+.undo {
+  background: linear-gradient(135deg, #f59e0b, #b45309);
+  margin-top: 40px;
+}
+
+.reset {
+  background: linear-gradient(135deg, #ef4444, #991b1b);
+}
 
 input, select {
   padding: 10px;
-  margin: 6px;
-  border-radius: 8px;
+  margin: 5px;
+  border-radius: 10px;
   border: none;
   font-size: 16px;
 }
@@ -108,29 +114,22 @@ input, select {
   <h1 class="title">🎾 Tennis Score</h1>
 
   <div class="card">
-
-    <h2>Spiel auswählen</h2>
     <button onclick="setMode('single')">Einzel</button>
     <button onclick="setMode('double')">Doppel</button>
 
     <div id="playerInputs"></div>
 
-    <h3>Wer hat Aufschlag?</h3>
+    <h3>Aufschlag</h3>
     <select id="serverSelect"></select>
-
-    <h3>Modus</h3>
-    <select id="countMode">
-      <option value="normal">Freies Spiel</option>
-      <option value="medenspiel">Medenspiel (DTB)</option>
-    </select>
 
     <button onclick="startGame()">Start</button>
   </div>
 </div>
 
 <div id="game" class="hidden">
+
   <div class="card">
-    <h2 id="sets"></h2>
+    <h2 id="setHistory"></h2>
     <h2 id="games"></h2>
     <h3 id="server"></h3>
     <h1 id="score"></h1>
@@ -138,9 +137,9 @@ input, select {
 
   <div id="buttons"></div>
 
-  <button class="undo" onclick="undo()">↩️ Rückgängig</button>
-  <br>
+  <button class="undo" onclick="undo()">↩️ Rückgängig</button><br>
   <button class="reset" onclick="reset()">Reset</button>
+
 </div>
 
 <script>
@@ -148,9 +147,9 @@ input, select {
 let mode="single";
 let players=[];
 let history=[];
+let matchTiebreak=false;
 
-let maxSets = 2;
-let matchTiebreak = false;
+let setHistory=[];
 
 let state={
   points:[0,0],
@@ -160,17 +159,29 @@ let state={
   server:0
 };
 
-function cloneState(){ return JSON.parse(JSON.stringify(state)); }
-function saveHistory(){ history.unshift(cloneState()); if(history.length>20) history.pop(); }
+function cloneState(){ return JSON.parse(JSON.stringify({state, matchTiebreak, setHistory})); }
+function restoreState(s){
+  state=s.state;
+  matchTiebreak=s.matchTiebreak;
+  setHistory=s.setHistory;
+}
+
+function saveHistory(){
+  history.unshift(cloneState());
+  if(history.length>20) history.pop();
+}
 
 function setMode(m){
   mode=m;
   let html="";
   if(m==="single"){
-    html=`<input id="p0" placeholder="Spieler 1"><input id="p1" placeholder="Spieler 2">`;
+    html=`<input id="p0" placeholder="Spieler 1">
+          <input id="p1" placeholder="Spieler 2">`;
   } else {
-    html=`<input id="p0" placeholder="A1"><input id="p1" placeholder="A2">
-          <input id="p2" placeholder="B1"><input id="p3" placeholder="B2">`;
+    html=`<input id="p0" placeholder="A1">
+          <input id="p1" placeholder="A2">
+          <input id="p2" placeholder="B1">
+          <input id="p3" placeholder="B2">`;
   }
   document.getElementById("playerInputs").innerHTML=html;
   updateServerOptions();
@@ -179,7 +190,7 @@ function setMode(m){
 function updateServerOptions(){
   let select=document.getElementById("serverSelect");
   select.innerHTML="";
-  let count = (mode==="single") ? 2 : 4;
+  let count=(mode==="single")?2:4;
   for(let i=0;i<count;i++){
     let opt=document.createElement("option");
     opt.value=i;
@@ -214,28 +225,26 @@ function startGame(){
 }
 
 function getTeamName(team){
-  if(mode === "single"){
-    return players[team];
-  } else {
-    return team === 0
-      ? players[0] + " / " + players[1]
-      : players[2] + " / " + players[3];
-  }
+  if(mode==="single") return players[team];
+  return team===0 ? players[0]+" / "+players[1] : players[2]+" / "+players[3];
 }
 
 function renderButtons(){
-  let html="";
-  html+=`<button class="teamA" onclick="point(0)">${getTeamName(0)}</button>`;
-  html+=`<button class="teamB" onclick="point(1)">${getTeamName(1)}</button>`;
-  document.getElementById("buttons").innerHTML=html;
+  document.getElementById("buttons").innerHTML=
+    `<button class="teamA" onclick="point(0)">${getTeamName(0)}</button>
+     <button class="teamB" onclick="point(1)">${getTeamName(1)}</button>`;
 }
 
 function render(){
-  document.getElementById("sets").innerText=`Satz: ${state.sets[0]} : ${state.sets[1]}`;
-  document.getElementById("games").innerText=`Spiele: ${state.games[0]} : ${state.games[1]}`;
 
-  let serverName = players[state.server % players.length];
-  document.getElementById("server").innerText="Aufschlag: " + serverName;
+  document.getElementById("setHistory").innerText =
+    setHistory.join(" | ");
+
+  document.getElementById("games").innerText =
+    `Spiele: ${state.games[0]} : ${state.games[1]}`;
+
+  document.getElementById("server").innerText =
+    "Aufschlag: " + players[state.server % players.length];
 
   let s=["0","15","30","40"];
   let score="";
@@ -245,7 +254,7 @@ function render(){
   }
   else if(state.points[0]>=3 && state.points[1]>=3){
     if(state.points[0]===state.points[1]) score="Einstand";
-    else score=state.points[0]>state.points[1]
+    else score = state.points[0]>state.points[1]
       ? "Vorteil " + getTeamName(0)
       : "Vorteil " + getTeamName(1);
   }
@@ -263,7 +272,7 @@ function point(t){
   if(state.tiebreak){
     let limit = matchTiebreak ? 10 : 7;
 
-    if(state.points[t] >= limit && state.points[t]-state.points[1-t] >= 2){
+    if(state.points[t]>=limit && state.points[t]-state.points[1-t]>=2){
       winGame(t);
     }
   } else {
@@ -278,8 +287,27 @@ function point(t){
 function winGame(t){
 
   if(matchTiebreak){
+    setHistory.push(`10:${state.points[1-t]}`);
     alert("🏆 Match gewonnen! " + getTeamName(t));
     reset();
+    return;
+  }
+
+  // ✅ Tiebreak Satzgewinn 7:6
+  if(state.tiebreak && state.games[0]===6 && state.games[1]===6){
+    setHistory.push(`7:6`);
+    state.sets[t]++;
+    state.games=[0,0];
+    state.points=[0,0];
+    state.tiebreak=false;
+    state.server++;
+
+    if(state.sets[0]===1 && state.sets[1]===1){
+      matchTiebreak=true;
+      state.tiebreak=true;
+      return;
+    }
+
     return;
   }
 
@@ -288,21 +316,14 @@ function winGame(t){
   state.server++;
 
   if(state.games[t]>=6 && state.games[t]-state.games[1-t]>=2){
+    setHistory.push(`${state.games[t]}:${state.games[1-t]}`);
     state.sets[t]++;
     state.games=[0,0];
 
     if(state.sets[0]===1 && state.sets[1]===1){
-      matchTiebreak = true;
-      state.tiebreak = true;
-      state.points=[0,0];
-      return;
+      matchTiebreak=true;
+      state.tiebreak=true;
     }
-  }
-
-  if(state.sets[t] === maxSets){
-    alert("🏆 Match gewonnen! " + getTeamName(t));
-    reset();
-    return;
   }
 
   state.tiebreak=(state.games[0]===6 && state.games[1]===6);
@@ -310,7 +331,7 @@ function winGame(t){
 
 function undo(){
   if(history.length===0) return;
-  state=history.shift();
+  restoreState(history.shift());
   render();
 }
 
@@ -324,4 +345,3 @@ setMode("single");
 
 </body>
 </html>
-``
