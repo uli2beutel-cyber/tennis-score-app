@@ -47,3 +47,143 @@ input {
 
 <body>
 
+<h1>🎾 Tennis Score</h1>
+
+<div id="setup" class="card">
+  <h2>Spiel auswählen</h2>
+
+  <button onclick="setMode('single')">Einzel</button>
+  <button onclick="setMode('double')">Doppel</button>
+
+  <div id="playerInputs"></div>
+
+  <button onclick="startGame()">Start</button>
+</div>
+
+<div id="game" class="hidden">
+
+<div class="card">
+<h2 id="sets"></h2>
+<h2 id="games"></h2>
+<h3 id="server"></h3>
+<h1 id="score"></h1>
+</div>
+
+<button class="teamA" onclick="point(0)">Team A</button>
+<button class="teamB" onclick="point(1)">Team B</button>
+
+<br>
+<button class="reset" onclick="reset()">Reset</button>
+
+</div>
+
+<script>
+let mode="single";
+let players=[];
+let points=[0,0],games=[0,0],sets=[0,0];
+let tiebreak=false;
+let server=0;
+
+function setMode(m){
+  mode=m;
+  let html="";
+  if(m==="single"){
+    html+=`<input id="p0" placeholder="Spieler 1">
+           <input id="p1" placeholder="Spieler 2">`;
+  } else {
+    html+=`<input id="p0" placeholder="A1">
+           <input id="p1" placeholder="A2">
+           <input id="p2" placeholder="B1">
+           <input id="p3" placeholder="B2">`;
+  }
+  document.getElementById("playerInputs").innerHTML=html;
+}
+
+function startGame(){
+  if(mode==="single"){
+    players=[
+      document.getElementById("p0").value || "Spieler 1",
+      document.getElementById("p1").value || "Spieler 2"
+    ];
+  } else {
+    players=[
+      document.getElementById("p0").value || "A1",
+      document.getElementById("p1").value || "A2",
+      document.getElementById("p2").value || "B1",
+      document.getElementById("p3").value || "B2"
+    ];
+  }
+
+  document.getElementById("setup").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+
+  render();
+}
+
+function render(){
+  document.getElementById("sets").innerText="Satz: "+sets[0]+" : "+sets[1];
+  document.getElementById("games").innerText="Spiele: "+games[0]+" : "+games[1];
+
+  let serverName = players[server] || "Spieler";
+  document.getElementById("server").innerText="Aufschlag: "+serverName;
+
+  let s=["0","15","30","40"];
+  let score="";
+  if(tiebreak){
+    score=points[0]+" : "+points[1]+" (TB)";
+  } else if(points[0]>=3 && points[1]>=3){
+    if(points[0]==points[1]) score="Einstand";
+    else score=points[0]>points[1]?"Vorteil A":"Vorteil B";
+  } else {
+    score=s[points[0]]+" : "+s[points[1]];
+  }
+
+  document.getElementById("score").innerText=score;
+}
+
+function point(t){
+  points[t]++;
+  if(tiebreak){
+    if(points[t]>=7 && points[t]-points[1-t]>=2){
+      winGame(t);
+    }
+  } else {
+    if(points[t]>=4 && points[t]-points[1-t]>=2){
+      winGame(t);
+    }
+  }
+  render();
+}
+
+function winGame(t){
+  games[t]++;
+  points=[0,0];
+  server=(server+1)%(mode==="single"?2:4);
+
+  if(games[t]>=6 && games[t]-games[1-t]>=2){
+    sets[t]++;
+    games=[0,0];
+  }
+
+  if(sets[t]==2){
+    alert("🏆 Match gewonnen Team " + (t===0?"A":"B"));
+    reset();
+    return;
+  }
+
+  if(games[0]==6 && games[1]==6){
+    tiebreak=true;
+  } else {
+    tiebreak=false;
+  }
+}
+
+function reset(){
+  location.reload();
+}
+
+setMode("single");
+</script>
+
+</body>
+</html>
